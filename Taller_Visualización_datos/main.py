@@ -1,3 +1,4 @@
+from asyncio.windows_events import NULL
 from tkinter import Tk, ttk
 import matplotlib.pyplot as mp
 import csv
@@ -8,15 +9,27 @@ from tkinter import *
 
 data= []
 sub_data = []
-def inicio(p,y):
+sub_data_limpio = []
+def inicio(p,y,z):
     with open ("abalone.csv") as f:
         reader = csv.reader(f)
         for x in reader:
             p.append(x)
         for j in range(len(data[0])-1):
+            clear_data = []
             columna = [fila[j+1] for fila in p]
             converter(columna)
+            superior = numpy.quantile(columna,.75)
+            inferior = numpy.quantile(columna,.25)
+            iqr = superior -inferior
+            limite_inferior = inferior - 1.5 * iqr
+            limite_superior = superior + 1.5 * iqr
+            for n in columna:
+                if(n > limite_inferior and n < limite_superior):
+                    clear_data.append(n)
+            z.append(clear_data)
             y.append(columna)
+            
 
 def converter(x):
     for i in range(len(x)):
@@ -26,39 +39,58 @@ def indice(op,y):
     return op.index(y)
 
 def histograma(x):
-    mp.hist(x)
+    if opcion.get():
+        dataz = sub_data[x]
+    else:
+        dataz = sub_data_limpio[x]
+    mp.hist(dataz)
     mp.title('Histograma')
     mp.xlabel("Valor de datos")
     mp.ylabel("Cantidad de datos")
     mp.show()
 
 def bloxplot(x):
-    mp.boxplot(x)
+    if opcion.get():
+        dataz = sub_data[x]
+    else:
+        dataz = sub_data_limpio[x]
+    mp.boxplot(dataz)
     mp.title('Caja y Bigotes')
     mp.xlabel("Valor de datos")
     mp.ylabel("Cantidad de datos")
     mp.show()
 
 def normal(x):
-    mean = numpy.mean(x)
-    std = numpy.std(x)
-    x = sorted(list(set(x)))
-    y = scipy.stats.norm.pdf(x, mean, std)
-    mp.plot(x,y)
+    if opcion.get():
+        dataz = sub_data[x]
+    else:
+        dataz = sub_data_limpio[x]
+    mp.plot(dataz)
     mp.title('Normal')
     mp.xlabel("Valor de datos")
     mp.ylabel("Cantidad de datos")
     mp.show()
+    
 
 def scatter(x,y):
-    mp.scatter(x, y)
+    if opcion.get():
+        dataz = sub_data[x]
+        datay = sub_data[y]
+    else:
+        dataz = sub_data_limpio[x]
+        datay = sub_data_limpio[y]
+    mp.scatter(dataz,datay)
     mp.title("Scatter")
     mp.show()
 
 def probability(x):
+    if opcion.get():
+        dataz = sub_data[x]
+    else:
+        dataz = sub_data_limpio[x]
     fig = mp.figure()
     ax = fig.add_subplot(111)
-    scipy.stats.probplot(x, dist=scipy.stats.norm,plot=ax)
+    scipy.stats.probplot(dataz, dist=scipy.stats.norm,plot=ax)
     mp.show()
 
 def ver():
@@ -67,7 +99,7 @@ def ver():
     else:
         print("NOUSS")
     
-inicio(data,sub_data)
+inicio(data,sub_data,sub_data_limpio)
 ventana = tkinter.Tk()
 ventana.title("IA")
 ventana.geometry("640x480")
@@ -118,26 +150,19 @@ opciones_3 = [
 ]
 list_3['values'] = opciones_3
 
-boton_1 = tkinter.Button(ventana,text="Histograma",command= lambda: histograma(sub_data[indice(opciones,list_1.get())]))
+boton_1 = tkinter.Button(ventana,text="Histograma",command= lambda: histograma(indice(opciones,list_1.get())))
 boton_1.place(x=480,y=80)
 
-boton_2 = tkinter.Button(ventana,text="Boxplot",command= lambda: bloxplot(sub_data[indice(opciones,list_1.get())]))
+boton_2 = tkinter.Button(ventana,text="Boxplot",command= lambda: bloxplot(indice(opciones,list_1.get())))
 boton_2.place(x=480,y=120)
 
-boton_3 = tkinter.Button(ventana,text="Normal",command= lambda: normal(sub_data[indice(opciones,list_1.get())]))
-boton_3.place(x=480,y=160)
+boton_4 = tkinter.Button(ventana,text="Normal",command= lambda: probability(indice(opciones,list_1.get())))
+boton_4.place(x=480,y=160)
 
-boton_4 = tkinter.Button(ventana,text="Probability",command= lambda: probability(sub_data[indice(opciones,list_1.get())]))
-boton_4.place(x=480,y=200)
-
-boton_5 = tkinter.Button(ventana,text="Scatter",command= lambda: scatter(sub_data[indice(opciones,list_2.get())],sub_data[indice(opciones,list_3.get())]))
+boton_5 = tkinter.Button(ventana,text="Scatter",command= lambda: scatter(indice(opciones,list_2.get()),indice(opciones,list_3.get())))
 boton_5.place(x=480,y=250)
 
 opcion = IntVar() # Como StrinVar pero en entero
-atipico = Checkbutton(ventana, text="atipico", variable=opcion, onvalue=1, offvalue=0 , command= lambda: ver()).pack()
-
+atipico = Checkbutton(ventana, text="atipico", variable=opcion, onvalue=1, offvalue=0 , command= lambda: ver()).place(x=360,y=80)
 
 ventana.mainloop()
-
-
-

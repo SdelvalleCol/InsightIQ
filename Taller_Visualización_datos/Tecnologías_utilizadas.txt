@@ -1,0 +1,10 @@
+from asyncio.windows_events import NULL
+from tkinter import Tk, ttk
+import matplotlib.pyplot as mp
+import csv
+import tkinter
+import numpy
+import scipy
+from tkinter import *
+
+Santiago Andres Del Valle Pinilla / 000427744
