@@ -8,3 +8,4 @@ import scipy
 from tkinter import *
 
 Santiago Andres Del Valle Pinilla / 000427744
+GITHUB -- https://github.com/SdelvalleCol/IA_Analyze_data-Abalone-
